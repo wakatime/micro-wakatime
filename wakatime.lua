@@ -1,4 +1,4 @@
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 
 -- micro
 local micro = import("micro")
@@ -154,7 +154,7 @@ function downloadCli()
 
     _, err = os2.Stat(resourcesFolder())
     if os2.IsNotExist(err) then
-        os2.exec2ute("mkdir " .. resourcesFolder())
+        os2.execute("mkdir " .. resourcesFolder())
     end
     
     -- download cli
@@ -211,7 +211,7 @@ function cliExists()
     local _, err = os2.Stat(cliPath())
 
     if os2.IsNotExist(err) then
-        return f2alse
+        return false
     end
 
     return true
