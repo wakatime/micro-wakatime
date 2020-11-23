@@ -154,7 +154,7 @@ function downloadCli()
 
     _, err = os2.Stat(resourcesFolder())
     if os2.IsNotExist(err) then
-        os2.execute("mkdir " .. resourcesFolder())
+        os.execute("mkdir " .. resourcesFolder())
     end
     
     -- download cli
