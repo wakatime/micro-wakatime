@@ -80,7 +80,7 @@ function getSetting(section, key)
         end
     end
 
-    return nil
+    return ""
 end
 
 function setSetting(section, key, value)
@@ -526,9 +526,7 @@ function sendHeartbeatExit(out, args)
 end
 
 function promptForApiKey()
-    local apiKey = getSetting("settings", "api_key")
-
-    micro.InfoBar():Prompt("API Key: ", apiKey, "api_key", function(input) 
+    micro.InfoBar():Prompt("API Key: ", getApiKey(), "api_key", function(input) 
         return
     end, function(input, canceled)
         if not canceled then
