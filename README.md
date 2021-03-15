@@ -6,6 +6,8 @@ Metrics, insights, and time tracking automatically generated from your programmi
 
 ## Installation
 
+> **_NOTE:_** Please [build Micro from source](https://github.com/zyedidia/micro#building-from-source) since the changes needed to have this plugin working haven't been released yet.
+
 Using the plugin manager:
 
 ```shell
@@ -24,7 +26,7 @@ Or manually install by cloning this repo as `wakatime` into your `plug` director
 git clone https://github.com/wakatime/micro-wakatime ~/.config/micro/plug/wakatime
 ```
 
-For the first time you install WakaTime in your machine the Micro startup could delay a bit. 
+For the first time you install WakaTime in your machine the Micro startup could delay a bit.
 
 1. Enter your [api key](https://wakatime.com/api-key), then hit `Enter`.
     > (If you’re not prompted, press ctrl + e then type `wakatime.apikey`.)
