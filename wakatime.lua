@@ -282,8 +282,8 @@ end
 function getOsArch()
     local arch
 
-    if (os2.getenv"os" or ""):match"^Windows" then
-        arch = os2.getenv"PROCESSOR_ARCHITECTURE"
+    if (os.getenv"os" or ""):match"^Windows" then
+        arch = os.getenv"PROCESSOR_ARCHITECTURE"
     else
         arch = io.popen"uname -m":read"*a"
     end
