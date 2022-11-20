@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.4 (2022-11-20)
+
+- fix getOsArch to call os lib from Lua. #9
+
 ## 1.0.3 (2020-11-23)
 
 - Fix downloadCli to call os lib from Lua
