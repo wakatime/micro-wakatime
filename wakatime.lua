@@ -104,7 +104,7 @@ function setSetting(section, key, value)
                 table.insert(contents, key .. " = " .. value)
                 found = true
             end
-            
+
             currentSection = string.lower(string.sub(line, 2, string.len(line) -1))
             table.insert(contents, string.rtrim(line))
         elseif currentSection == section then
@@ -124,7 +124,7 @@ function setSetting(section, key, value)
     end
 
     if not found then
-        if currentSection ~= section then 
+        if currentSection ~= section then
             table.insert(contents, "[" .. section .. "]")
         end
 
@@ -156,7 +156,7 @@ function downloadCli()
     if os2.IsNotExist(err) then
         os.execute("mkdir " .. resourcesFolder())
     end
-    
+
     -- download cli
     local res, err = http.Get(url)
     if err ~= nil then
@@ -179,7 +179,7 @@ function downloadCli()
         micro.InfoBar():Message("error saving wakatime-cli.zip")
         micro.Log("error saving wakatime-cli.zip")
         micro.Log(err)
-        return 
+        return
     end
 
     err = util.Unzip(zipFile, resourcesFolder())
@@ -503,7 +503,7 @@ function sendHeartbeat(file, isWrite)
 
     local isDebugEnabled = getSetting("settings", "debug"):lower()
     local args = {"--entity", file, "--plugin", userAgent}
-    
+
     if isWrite then
         table.insert(args, "--write")
     end
@@ -526,7 +526,7 @@ function sendHeartbeatExit(out, args)
 end
 
 function promptForApiKey()
-    micro.InfoBar():Prompt("API Key: ", getApiKey(), "api_key", function(input) 
+    micro.InfoBar():Prompt("API Key: ", getApiKey(), "api_key", function(input)
         return
     end, function(input, canceled)
         if not canceled then
@@ -546,7 +546,7 @@ function isValidApiKey(key)
 
     local regexp = import("regexp")
 
-    matched, _ = regexp.MatchString("(?i)^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$", key)
+    matched, _ = regexp.MatchString("(?i)^(waka_)?[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$", key)
 
     return matched
 end
