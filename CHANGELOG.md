@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.5 (2022-11-27)
+
+- Support api key with waka prefix.
+
 ## 1.0.4 (2022-11-20)
 
 - fix getOsArch to call os lib from Lua. #9
