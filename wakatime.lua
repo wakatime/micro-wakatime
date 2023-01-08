@@ -9,13 +9,19 @@ local shell = import("micro/shell")
 local filepath = import("filepath")
 local http = import("http")
 local ioutil = import("io/ioutil")
+local json = import("encoding/json")
 local os2 = import("os")
 local runtime = import("runtime")
 -- wakatime
 local userAgent = "micro/" .. util.SemVersion:String() .. " micro-wakatime/" .. VERSION
-local s3Urlprefix = "https://wakatime-cli.s3-us-west-2.amazonaws.com/"
+local ghReleasesUrl = "https://api.github.com/repos/wakatime/wakatime-cli/releases/latest"
+local ghDownloadUrl = "https://github.com/wakatime/wakatime-cli/releases/download"
 local lastFile = ""
 local lastHeartbeat = 0
+
+type GiHubReleasesResponse struct {
+  TagName string    `json:"tag_name"`
+}
 
 function init()
     config.MakeCommand("wakatime.apikey", promptForApiKey, config.NoComplete)
@@ -146,7 +152,7 @@ function downloadCli()
     local io = import("io")
     local zip = import("archive/zip")
 
-    local url = s3BucketUrl() .. "wakatime-cli.zip"
+    local url = getCliDownloadUrl()
     local zipFile = filepath.Join(resourcesFolder(), "wakatime-cli.zip")
 
     micro.InfoBar():Message("downloading wakatime-cli...")
@@ -204,7 +210,7 @@ function cliPath()
         ext = ".exe"
     end
 
-    return filepath.Join(resourcesFolder(), "wakatime-cli", ("wakatime-cli" .. ext))
+    return filepath.Join(resourcesFolder(), ("wakatime-cli-" .. getOs() .. "-" getArch() .. ext))
 end
 
 function cliExists()
@@ -222,11 +228,6 @@ function cliUpToDate()
         return false
     end
 
-    local ioutil = import("ioutil")
-    local fmt = import("fmt")
-
-    local url = s3BucketUrl() .. "current_version.txt"
-
     -- get current version from installed cli
     local currentVersion, err = shell.ExecCommand(cliPath(), "--version")
     if err ~= nil then
@@ -239,13 +240,28 @@ function cliUpToDate()
     micro.Log("Current wakatime-cli version is " .. currentVersion)
     micro.Log("Checking for updates to wakatime-cli...")
 
-    -- read version from S3
-    local res, err = http.Get(url)
-    if err ~= nil then
-        micro.InfoBar():Message("error retrieving wakatime-cli version from S3")
-        micro.Log("error retrieving wakatime-cli version from S3")
-        micro.Log(err)
+    latestVersion = getCliLatestVersion()
+
+    if string.gsub(latestVersion, "[\n\r]", "") == string.gsub(currentVersion, "[\n\r]", "") then
+        micro.Log("wakatime-cli is up to date")
         return true
+    end
+
+    micro.Log("Found an updated wakatime-cli " .. latestVersion)
+
+    return false
+end
+
+function getCliLatestVersion()
+    local ioutil = import("ioutil")
+
+    -- read version from GitHub
+    local res, err = http.Get(ghReleasesUrl)
+    if err ~= nil then
+        micro.InfoBar():Message("error retrieving wakatime-cli version from GitHub API")
+        micro.Log("error retrieving wakatime-cli version from GitHub API")
+        micro.Log(err)
+        return ""
     end
 
     body, err = ioutil.ReadAll(res.Body)
@@ -253,33 +269,27 @@ function cliUpToDate()
         micro.InfoBar():Message("error reading all bytes from response body")
         micro.Log("error reading all bytes from response body")
         micro.Log(err)
-        return true
+        return ""
     end
 
-    -- parse byte array to string
-    latestVersion = util.String(body)
-
-    if string.gsub(latestVersion, "[\n\r]", "") == string.gsub(currentVersion, "[\n\r]", "") then
-        micro.Log("wakatime-cli is up to date")
-        return true
+    var resp GiHubReleasesResponse
+    err = json.Unmarshal(body, &resp)
+    if err ~= nil then
+        micro.InfoBar():Message("error parsing json from GitHub API response")
+        micro.Log("error parsing json from GitHub API response")
+        micro.Log(err)
+        return ""
     end
 
-    micro.Log("Found an updated wakatime-cli v" .. latestVersion)
-
-    return false
+    return resp.TagName
 end
 
-function s3BucketUrl()
-    if runtime.GOOS == "darwin" then
-        return s3Urlprefix .. "mac-x86-64/"
-    elseif runtime.GOOS == "windows" then
-        return s3Urlprefix .. "windows-x86-" .. getOsArch() .. "/"
-    else
-        return s3Urlprefix .. "linux-x86-64/"
-    end
+function getCliDownloadUrl()
+    version = getCliLatestVersion()
+    return (ghDownloadUrl ... "/" ... version ... "/wakatime-cli-" ... getOs() ... "-" ... getArch() ... ".zip")
 end
 
-function getOsArch()
+function getArch()
     local arch
 
     if (os.getenv"os" or ""):match"^Windows" then
@@ -289,10 +299,14 @@ function getOsArch()
     end
 
     if (arch or ""):match"64" then
-        return "64"
+        return "amd64"
     else
-        return "32"
+        return "386"
     end
+end
+
+function getOs()
+    return runtime.GOOS
 end
 
 function isWindows()
