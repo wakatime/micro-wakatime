@@ -9,7 +9,6 @@ local shell = import("micro/shell")
 local filepath = import("filepath")
 local http = import("http")
 local ioutil = import("io/ioutil")
-local json = import("encoding/json")
 local os2 = import("os")
 local runtime = import("runtime")
 -- wakatime
@@ -19,15 +18,11 @@ local ghDownloadUrl = "https://github.com/wakatime/wakatime-cli/releases/downloa
 local lastFile = ""
 local lastHeartbeat = 0
 
-type GiHubReleasesResponse struct {
-  TagName string    `json:"tag_name"`
-}
-
 function init()
     config.MakeCommand("wakatime.apikey", promptForApiKey, config.NoComplete)
 
     micro.InfoBar():Message("WakaTime initializing...")
-    micro.Log("initializing WakaTime v" .. VERSION)
+    micro.Log("Initializing WakaTime v" .. VERSION)
 
     checkCli()
     checkApiKey()
@@ -210,7 +205,7 @@ function cliPath()
         ext = ".exe"
     end
 
-    return filepath.Join(resourcesFolder(), ("wakatime-cli-" .. getOs() .. "-" getArch() .. ext))
+    return filepath.Join(resourcesFolder(), ("wakatime-cli-" .. getOs() .. "-" .. getArch() .. ext))
 end
 
 function cliExists()
@@ -272,21 +267,16 @@ function getCliLatestVersion()
         return ""
     end
 
-    var resp GiHubReleasesResponse
-    err = json.Unmarshal(body, &resp)
-    if err ~= nil then
-        micro.InfoBar():Message("error parsing json from GitHub API response")
-        micro.Log("error parsing json from GitHub API response")
-        micro.Log(err)
-        return ""
-    end
+    local bodyStr = util.String(body)
+    micro.Log(bodyStr)
 
-    return resp.TagName
+    _, _, version = string.find(bodyStr, '"tag_name":"([^"]+)"')
+    return version
 end
 
 function getCliDownloadUrl()
     version = getCliLatestVersion()
-    return (ghDownloadUrl ... "/" ... version ... "/wakatime-cli-" ... getOs() ... "-" ... getArch() ... ".zip")
+    return (ghDownloadUrl .. "/" .. version .. "/wakatime-cli-" .. getOs() .. "-" .. getArch() .. ".zip")
 end
 
 function getArch()
