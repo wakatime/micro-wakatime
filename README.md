@@ -6,8 +6,6 @@ Metrics, insights, and time tracking automatically generated from your programmi
 
 ## Installation
 
-> **_NOTE:_** Please [build Micro from source](https://github.com/zyedidia/micro#building-from-source) since the changes needed to have this plugin working haven't been released yet.
-
 Using the plugin manager:
 
 ```shell
