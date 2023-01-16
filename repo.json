@@ -45,6 +45,13 @@
         "Require": {
           "micro": ">=2.0.0"
         }
+      },
+      {
+        "Version": "1.0.6",
+        "Url": "https://github.com/wakatime/micro-wakatime/archive/1.0.6.zip",
+        "Require": {
+          "micro": ">=2.0.0"
+        }
       }
     ]
 }]
