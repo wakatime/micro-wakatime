@@ -1,6 +1,6 @@
 # WakaTime for Micro Editor
 
-[![Coding time tracker](https://wakatime.com/badge/github/wakatime/WakaTime.novaextension.png?branch=master)](https://wakatime.com/badge/github/wakatime/WakaTime.novaextension)
+[![Coding time tracker](https://wakatime.com/badge/github/wakatime/micro-wakatime.png?branch=master)](https://wakatime.com/badge/github/wakatime/micro-wakatime)
 
 Metrics, insights, and time tracking automatically generated from your programming activity.
 
