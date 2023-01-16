@@ -1,12 +1,18 @@
 # Changelog
 
+## 1.0.6 (2023-01-16)
+
+- Cache GitHub API requests.
+[#11](https://github.com/wakatime/micro-wakatime/issues/11)
+
 ## 1.0.5 (2022-11-27)
 
 - Support api key with waka prefix
 
 ## 1.0.4 (2022-11-20)
 
-- fix getOsArch to call os lib from Lua. #9
+- fix getOsArch to call os lib from Lua.
+[#9](https://github.com/wakatime/micro-wakatime/issues/9)
 
 ## 1.0.3 (2020-11-23)
 
