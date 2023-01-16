@@ -58,23 +58,23 @@ function getConfigFile()
 end
 
 function getSetting(section, key)
-    config, err = ioutil.ReadFile(getConfigFile())
+    local config, err = ioutil.ReadFile(getConfigFile())
     if err ~= nil then
         micro.InfoBar():Message("failed reading ~/.wakatime.cfg")
         micro.Log("failed reading ~/.wakatime.cfg")
         micro.Log(err)
     end
 
-    lines = util.String(config)
-    currentSection = ""
+    local lines = util.String(config)
+    local currentSection = ""
 
     for line in lines:gmatch("[^\r\n]+") do
-        line = string.trim(line)
+        line = string.rtrim(line)
         if string.starts(line, "[") and string.ends(line, "]") then
             currentSection = string.lower(string.sub(line, 2, string.len(line) -1))
         elseif currentSection == section then
-            parts = string.split(line, "=")
-            currentKey = string.trim(parts[1])
+            local parts = string.split(line, "=")
+            local currentKey = string.trim(parts[1])
             if currentKey == key then
                 return string.trim(parts[2])
             end
@@ -85,7 +85,7 @@ function getSetting(section, key)
 end
 
 function setSetting(section, key, value)
-    config, err = ioutil.ReadFile(getConfigFile())
+    local config, err = ioutil.ReadFile(getConfigFile())
     if err ~= nil then
         micro.InfoBar():Message("failed reading ~/.wakatime.cfg")
         micro.Log("failed reading ~/.wakatime.cfg")
@@ -93,13 +93,13 @@ function setSetting(section, key, value)
         return
     end
 
-    contents = {}
-    currentSection = ""
-    lines = util.String(config)
-    found = false
+    local contents = {}
+    local currentSection = ""
+    local lines = util.String(config)
+    local found = false
 
     for line in lines:gmatch("[^\r\n]+") do
-        line = string.trim(line)
+        line = string.rtrim(line)
         if string.starts(line, "[") and string.ends(line, "]") then
             if currentSection == section and not found then
                 table.insert(contents, key .. " = " .. value)
@@ -109,8 +109,8 @@ function setSetting(section, key, value)
             currentSection = string.lower(string.sub(line, 2, string.len(line) -1))
             table.insert(contents, string.rtrim(line))
         elseif currentSection == section then
-            parts = string.split(line, "=")
-            currentKey = string.trim(parts[1])
+            local parts = string.split(line, "=")
+            local currentKey = string.trim(parts[1])
             if currentKey == key then
                 if not found then
                     table.insert(contents, key .. " = " .. value)
@@ -139,13 +139,10 @@ function setSetting(section, key, value)
         micro.Log(err)
         return
     end
-
-    micro.Log("~/.wakatime.cfg successfully saved")
 end
 
 function downloadCli()
     local io = import("io")
-    local zip = import("archive/zip")
 
     local url = getCliDownloadUrl()
     local zipFile = filepath.Join(resourcesFolder(), "wakatime-cli.zip")
@@ -153,7 +150,7 @@ function downloadCli()
     micro.InfoBar():Message("downloading wakatime-cli...")
     micro.Log("downloading wakatime-cli from " .. url)
 
-    _, err = os2.Stat(resourcesFolder())
+    local _, err = os2.Stat(resourcesFolder())
     if os2.IsNotExist(err) then
         os.execute("mkdir " .. resourcesFolder())
     end
@@ -167,7 +164,7 @@ function downloadCli()
         return
     end
 
-    out, err = os2.Create(zipFile)
+    local out, err = os2.Create(zipFile)
     if err ~= nil then
         micro.InfoBar():Message("error creating new wakatime-cli.zip")
         micro.Log("error creating new wakatime-cli.zip")
@@ -232,12 +229,12 @@ function cliUpToDate()
         return true
     end
 
-    micro.Log("Current wakatime-cli version is " .. currentVersion)
+    micro.Log("Current wakatime-cli version is " .. string.rtrim(currentVersion))
     micro.Log("Checking for updates to wakatime-cli...")
 
-    latestVersion = getCliLatestVersion()
+    local latestVersion = string.rtrim(getCliLatestVersion())
 
-    if string.gsub(latestVersion, "[\n\r]", "") == string.gsub(currentVersion, "[\n\r]", "") then
+    if latestVersion == string.rtrim(currentVersion) then
         micro.Log("wakatime-cli is up to date")
         return true
     end
@@ -250,27 +247,59 @@ end
 function getCliLatestVersion()
     local ioutil = import("ioutil")
 
-    -- read version from GitHub
-    local res, err = http.Get(ghReleasesUrl)
+    local res, err = nil, nil
+
+    if util.HttpRequest ~= nil then
+      local lastModifiedSetting = getSetting("internal", "cli_version_last_modified")
+
+      local headers = {}
+      if lastModifiedSetting ~= "" then
+          headers = {"If-Modified-Since", lastModifiedSetting}
+      end
+
+      -- read version from GitHub
+      res, err = util.HttpRequest("GET", ghReleasesUrl, headers)
+    else
+      res, err = http.Get(ghReleasesUrl)
+    end
+
     if err ~= nil then
-        micro.InfoBar():Message("error retrieving wakatime-cli version from GitHub API")
+        micro.InfoBar():Message("error downloading wakatime-cli")
         micro.Log("error retrieving wakatime-cli version from GitHub API")
         micro.Log(err)
         return ""
     end
 
-    body, err = ioutil.ReadAll(res.Body)
+    if res.StatusCode ~= 200 and res.StatusCode ~= 304 then
+        micro.InfoBar():Message("error downloading wakatime-cli")
+        micro.Log("error retrieving wakatime-cli version from GitHub API")
+        micro.Log("GitHub API status code: " .. res.StatusCode)
+        return ""
+    end
+
+    if res.StatusCode == 304 then
+        return getSetting("internal", "cli_version")
+    end
+
+    local body, err = ioutil.ReadAll(res.Body)
     if err ~= nil then
-        micro.InfoBar():Message("error reading all bytes from response body")
+        micro.InfoBar():Message("error downloading wakatime-cli")
         micro.Log("error reading all bytes from response body")
         micro.Log(err)
         return ""
     end
 
+    -- parse byte array to string
     local bodyStr = util.String(body)
-    micro.Log(bodyStr)
 
     _, _, version = string.find(bodyStr, '"tag_name":"([^"]+)"')
+
+    local lastModified = res.Header.Get(res.Header, "last-modified")
+    if lastModified ~= "" and version ~= "" then
+        setSetting("internal", "cli_version", version)
+        setSetting("internal", "cli_version_last_modified", lastModified)
+    end
+
     return version
 end
 
@@ -300,7 +329,7 @@ function getOs()
 end
 
 function isWindows()
-    return runtime.GOOS == "windows"
+    return getOs() == "windows"
 end
 
 function onSave(bp)
@@ -494,7 +523,7 @@ function enoughTimePassed(time)
 end
 
 function onEvent(file, isWrite)
-    time = os.time()
+    local time = os.time()
     if isWrite or enoughTimePassed(time) or lastFile ~= file then
         sendHeartbeat(file, isWrite)
         lastFile = file
@@ -531,7 +560,6 @@ end
 
 function promptForApiKey()
     micro.InfoBar():Prompt("API Key: ", getApiKey(), "api_key", function(input)
-        return
     end, function(input, canceled)
         if not canceled then
             if isValidApiKey(input) then
@@ -549,8 +577,7 @@ function isValidApiKey(key)
     end
 
     local regexp = import("regexp")
-
-    matched, _ = regexp.MatchString("(?i)^(waka_)?[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$", key)
+    local matched, _ = regexp.MatchString("(?i)^(waka_)?[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$", key)
 
     return matched
 end

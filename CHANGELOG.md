@@ -2,7 +2,7 @@
 
 ## 1.0.5 (2022-11-27)
 
-- Support api key with waka prefix.
+- Support api key with waka prefix
 
 ## 1.0.4 (2022-11-20)
 
