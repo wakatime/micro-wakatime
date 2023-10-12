@@ -27,7 +27,8 @@ git clone https://github.com/wakatime/micro-wakatime ~/.config/micro/plug/wakati
 For the first time you install WakaTime in your machine the Micro startup could delay a bit.
 
 1. Enter your [api key](https://wakatime.com/api-key), then hit `Enter`.
-    > (If you’re not prompted, press ctrl + e then type `wakatime.apikey`.)
+
+   > (If you’re not prompted, press ctrl + e then type `wakatime.apikey`.)
 
 2. Use Micro Editor and your coding activity will be displayed on your [WakaTime dashboard](https://wakatime.com).
 
@@ -48,11 +49,11 @@ More information can be found from [wakatime core](https://github.com/wakatime/w
 First, turn on debug mode:
 
 1. Run micro with flag `-debug`.
-    > Logs are only generated when running with debug flag. Any other previous logs haven't been recorded.
+   > Logs are only generated when running with debug flag. Any other previous logs haven't been recorded.
 
 Next, navigate to the folder you started micro and open `log.txt`.
 
-Errors outside the scope of this plugin go to `$HOME/.wakatime.log` from [wakatime-cli][wakatime-cli-help].
+Errors outside the scope of this plugin go to `$HOME/.wakatime/wakatime.log` from [wakatime-cli][wakatime-cli-help].
 
 The [How to Debug Plugins][how to debug] guide shows how to check when coding activity was last received from your editor using the [Plugins Status Page][plugins status page].
 

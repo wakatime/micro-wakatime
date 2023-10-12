@@ -551,7 +551,7 @@ end
 
 function sendHeartbeatStdErr(err)
     micro.Log(err)
-    micro.Log("Check your ~/.wakatime.log file for more details.")
+    micro.Log("Check your ~/.wakatime/wakatime.log file for more details.")
 end
 
 function sendHeartbeatExit(out, args)
