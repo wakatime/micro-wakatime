@@ -518,8 +518,14 @@ function onScrollDown(bp)
     return true
 end
 
+function onRune(bp, r)
+    onEvent(bp.buf.AbsPath, false)
+
+    return true
+end
+
 function enoughTimePassed(time)
-    return lastHeartbeat + 120000 < time
+    return lastHeartbeat + 120 < time
 end
 
 function onEvent(file, isWrite)
