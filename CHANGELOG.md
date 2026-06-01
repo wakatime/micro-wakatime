@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.7 (2026-05-31)
+
+- fix heartbeat interval and add onRune hook.
+[#15](https://github.com/wakatime/micro-wakatime/pull/15)
+
 ## 1.0.6 (2023-01-16)
 
 - Cache GitHub API requests.
